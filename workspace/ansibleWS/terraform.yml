@@ -1,0 +1,44 @@
+- hosts: cloud
+  vars:
+    - device_name: "/dev/xvdc"
+  tasks:
+  - name: Install httpd Webserver
+    package:
+      name: httpd
+      state: present
+
+  - name: Start the service of httpd
+    service:
+      name: httpd
+      state: started 
+
+  - name: Create a new ext4 primary partition
+    parted:
+      device: "{{ device_name }}"
+      number: 1
+      fs_type: ext4
+      state: present
+
+  - name: Create a ext4 filesystem
+    filesystem:
+      fstype: ext4
+      dev: "{{ device_name }}1"
+
+  - name: Mount DVD 
+    mount:
+      path: /var/www/html/
+      src: "{{ device_name }}1"
+      fstype: ext4
+      opts: defaults
+      state: mounted
+
+  - name: Install git package
+    package: 
+      name: git
+      state: present
+
+  - name: Clone a repo with separate git directory
+    git:           
+      repo: https://github.com/sheikhaafaq/webpage.git
+      dest: /var/www/html/web/
+ 
